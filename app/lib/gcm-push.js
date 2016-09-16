@@ -53,9 +53,14 @@ function GcmPushManager(app) {
 
     messageOptions.collapseKey = this.application.name;
     push = new gcm.Message(messageOptions);
-    push.addDataWithObject(custom);
+    if (custom.data) push.addData(custom.data);
+    if (custom.notification) push.addNotification(custom.notification);
+    //push.addData(custom);
 
-    debug("GCM : %d tokens to send.", tokens.length);
+    debug("GCM****** : %d tokens to send.", tokens.length);
+    debug("GCM****** : message:", JSON.stringify(message));
+    debug("GCM****** : custom:", JSON.stringify(custom));
+    debug("GCM****** : messageOptions:", JSON.stringify(messageOptions));
 
     // GCM limit the sending of 1000 tokens in bulk mode
     bulkTokens = _.chunk(tokens, GCM_BULK_LIMIT);

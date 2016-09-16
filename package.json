@@ -25,7 +25,7 @@
     "mongoose": "~4.1.6",
     "mongoose-paginate": "~4.0.1",
     "morgan": "^1.2.3",
-    "node-gcm": "^0.9.15"
+    "node-gcm": "^0.14.4"
   },
   "devDependencies": {
     "look": "^0.1.3",
