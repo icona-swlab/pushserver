@@ -1,0 +1,7 @@
+[{
+  "name"      : "pushserver",
+  "script"    : "./bin/pushserver",
+  "env": {
+        "NODE_ENV": "production"
+  }
+}]
