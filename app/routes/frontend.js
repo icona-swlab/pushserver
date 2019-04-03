@@ -95,7 +95,7 @@ var controllers = [];
   });
 
   router.post(['/admin/' + item + '/add'], function(req, res, next) {
-    debug('Creating an ' + item + ' obj :' + req.body);
+    debug('Creating an ' + JSON.stringify(item) + ' obj :' + JSON.stringify(req.body));
     controller.postAction(req.body, function(err) {
       if (err) {
         res.render('administration/' + item + '/add', {
