@@ -6,13 +6,13 @@ var debug = require('debug')('pushserver'),
 
 // profiling if needed
 if (process.env.NODE_ENV === "development") {
-  require('look').start(); 
+  require('look').start();
 }
 
 global.config = config = require('config').get('pushserver');
 server.set('port', process.env.PORT || global.config.get('port') || 3000);
 
-var server = server.listen(server.get('port'), function() {
+var server = server.listen(server.get('port'), '127.0.0.1', function() {
   debug('Express server listening on port '+ server.address().port);
   console.log("PushServer started on port "+ server.address().port);
   console.log("PushServer NODE_ENV = [%s]",process.env.NODE_ENV?process.env.NODE_ENV:"default");
