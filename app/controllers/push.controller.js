@@ -67,7 +67,7 @@ var PushController = function(mongooseModel, pushCon) {
         customCriteria = pushObj.customCriteria;
       }
 
-      // Fixing issue#6 using the lean mongoose param 
+      // Fixing issue#6 using the lean mongoose param
       // https://groups.google.com/forum/#!topic/mongoose-orm/u2_DzDydcnA/discussion
       debug("Device query for push using batchSize = " + self.configBatchSize );
       device = device.find(customCriteria || {}).batchSize(self.configBatchSize).lean(true);
@@ -124,6 +124,7 @@ var PushController = function(mongooseModel, pushCon) {
               "tokens": item.tokens
             };
 
+
             // setting the number of tokens for the stats object in pushObj
             pushObj.stats.push({
               application: obj._id,
@@ -171,7 +172,7 @@ var PushController = function(mongooseModel, pushCon) {
     //handling push
     debug('Sending pushObject :', pushObj);
 
-    // creating the correct payload 
+    // creating the correct payload
     var payload = self.payloadify(pushObj.payload);
     if (pushObj.target) {
       console.log("Submitting push to TARGET %s", pushObj.target);

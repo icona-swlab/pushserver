@@ -2,7 +2,7 @@
 var debug = require('debug')('pushserver:apns-push'),
   Promise = require('bluebird'),
   mongoose = require('mongoose')
-  apn = require('apn'),
+  apn = require('@parse/node-apn'),
   config = require('config').get('pushserver'),
   device = mongoose.model('devices'),
   util = require('util');
@@ -13,7 +13,7 @@ function ApnPushManager(app) {
   this.config = config.get('apn');
   // clone the conf (kinda)
   this.connectionConf = JSON.parse(JSON.stringify(this.config.get('connection')));
-  // Setup a connection to the feedback service 
+  // Setup a connection to the feedback service
   this.feedbackConf = JSON.parse(JSON.stringify(this.config.get('feedback')));
   this.feedback = null;
   if (this.application.pfx && this.application.pfx !== "") {
@@ -73,25 +73,25 @@ function ApnPushManager(app) {
       "concurrency": config.get("dbConfig").get("concurrencyLimit") || 50
     }).then(function(item){
       if (item.length) {
-        console.log("APNS : %d obsolete tokens have been removed for application %s[%s] .", item.length, self.application.name, self.application.type);  
+        console.log("APNS : %d obsolete tokens have been removed for application %s[%s] .", item.length, self.application.name, self.application.type);
       }
     });
   };
 
   ApnPushManager.prototype.feedbackRun = function() {
-    var self = this;
-    debug('APNS : Openning feedback connection for ', self.application);
-    debug('APNS : Using feedback connection options : ', self.feedbackConf);
-    self.feedback = new apn.feedback(self.feedbackConf);
-
-    self.feedback.on('error', function(error) {
-      console.error('APNS : Error while initializing the connection to the feedback platform for %s[%s] : %s', self.application.name, self.application.type, error);
-    });
-
-    self.feedback.on('feedback', function(feedbackData) {
-      self.handleFeedback(feedbackData);
-    });
-    self.feedback.on('feedbackError', console.error);
+    // var self = this;
+    // debug('APNS : Openning feedback connection for ', self.application);
+    // debug('APNS : Using feedback connection options : ', self.feedbackConf);
+    // self.feedback = new apn.feedback(self.feedbackConf);
+    //
+    // self.feedback.on('error', function(error) {
+    //   console.error('APNS : Error while initializing the connection to the feedback platform for %s[%s] : %s', self.application.name, self.application.type, error);
+    // });
+    //
+    // self.feedback.on('feedback', function(feedbackData) {
+    //   self.handleFeedback(feedbackData);
+    // });
+    // self.feedback.on('feedbackError', console.error);
   };
 
   ApnPushManager.prototype.connect = function() {
@@ -103,9 +103,9 @@ function ApnPushManager(app) {
     debug('APNS : Openning connection for ', self.application);
     debug('APNS : Using connection options : ', self.connectionConf);
     // TODO : handling error like bad cert or key, etc.
-    // where the error go ? 
+    // where the error go ?
     try {
-      self.service = new apn.connection(self.connectionConf);
+      self.service = new apn.Provider(self.connectionConf);
     } catch (err) {
       console.error("APNS : Unable to connect for application %s[%s] : %s", self.application.name, self.application.type, err.message);
       throw err;
@@ -148,13 +148,34 @@ function ApnPushManager(app) {
     // connect to apple server, using the app's cred & key
     console.log("APNS : Sending %d tokens.", tokens.length);
 
-    var note = new apn.notification(custom);
-    note.setAlertText(message);
-    note.setExpiry(Math.floor(Date.now() / 1000) + 3600); // Expires 1 hour from now.
+    const note = new apn.Notification(custom);
+    note.alert = message;
+    note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
 
-    note.setBadge(1);
+    note.badge = 1;
     note.sound = "default";
-    this.service.pushNotification(note, tokens);
+    this.service.send(note, tokens)
+        .then((response) => {
+          response.sent.forEach( (token) => {
+            console.log('Sent: ', token);
+          });
+          response.failed.forEach( (failure) => {
+            if (failure.error) {
+              console.log('Error failure: ', failure.error)
+              // A transport-level error occurred (e.g. network problem)
+              //notificationError(user, failure.device, failure.error);
+            } else {
+              // `failure.status` is the HTTP status code
+              // `failure.response` is the JSON payload
+              //notificationFailed(user, failure.device, failure.status, failure.response);
+              console.log('Error with status: ', failure.status)
+            }
+          });
+        })
+        .catch((err) => {
+          console.log('Error: ', err)
+        })
+
   };
 
   ApnPushManager.prototype.disconnect = function() {
