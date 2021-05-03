@@ -154,6 +154,7 @@ function ApnPushManager(app) {
 
     note.badge = 1;
     note.sound = "default";
+    note.topic = 'it.icona.acty.client';
     this.service.send(note, tokens)
         .then((response) => {
           response.sent.forEach( (token) => {
