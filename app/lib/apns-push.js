@@ -78,22 +78,6 @@ function ApnPushManager(app) {
     });
   };
 
-  ApnPushManager.prototype.feedbackRun = function() {
-    // var self = this;
-    // debug('APNS : Openning feedback connection for ', self.application);
-    // debug('APNS : Using feedback connection options : ', self.feedbackConf);
-    // self.feedback = new apn.feedback(self.feedbackConf);
-    //
-    // self.feedback.on('error', function(error) {
-    //   console.error('APNS : Error while initializing the connection to the feedback platform for %s[%s] : %s', self.application.name, self.application.type, error);
-    // });
-    //
-    // self.feedback.on('feedback', function(feedbackData) {
-    //   self.handleFeedback(feedbackData);
-    // });
-    // self.feedback.on('feedbackError', console.error);
-  };
-
   ApnPushManager.prototype.connect = function() {
     var self = this;
     if (self.application === null) {
@@ -143,40 +127,33 @@ function ApnPushManager(app) {
   };
 
   // If you plan on sending identical paylods to many devices you can do something like this.
+  /**
+   *
+   * @param message is undefined
+   * @param custom is the payload object from the server who uses the api
+   * @param tokens
+   */
   ApnPushManager.prototype.send = function(message, custom, tokens) {
     debug('APNS : Sending push with : message = %s message, custom = %j , num tokens = %d', message, custom, tokens.length);
     // connect to apple server, using the app's cred & key
     console.log("APNS : Sending %d tokens.", tokens.length);
 
     const note = new apn.Notification(custom);
-    note.alert = message;
     note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-
-    note.badge = 1;
     note.sound = "default";
-    note.topic = 'it.icona.acty.client';
+    note.pushType = 'alert'; // required from iOS 13
     this.service.send(note, tokens)
         .then((response) => {
-          response.sent.forEach( (token) => {
-            console.log('Sent: ', token);
+          response.sent.forEach((token) => {
+            console.log('APNS : Sent notification to token ', token);
           });
-          response.failed.forEach( (failure) => {
-            if (failure.error) {
-              console.log('Error failure: ', failure.error)
-              // A transport-level error occurred (e.g. network problem)
-              //notificationError(user, failure.device, failure.error);
-            } else {
-              // `failure.status` is the HTTP status code
-              // `failure.response` is the JSON payload
-              //notificationFailed(user, failure.device, failure.status, failure.response);
-              console.log('Error with status: ', failure.status)
-            }
+          response.failed.forEach((failure) => {
+            console.log('APNS : Failed to send notification ', failure);
           });
         })
         .catch((err) => {
-          console.log('Error: ', err)
+          console.log('APNS : send Error ', err);
         })
-
   };
 
   ApnPushManager.prototype.disconnect = function() {
@@ -185,7 +162,6 @@ function ApnPushManager(app) {
   };
 
   this.connect();
-  this.feedbackRun();
 }
 
 module.exports = ApnPushManager;
