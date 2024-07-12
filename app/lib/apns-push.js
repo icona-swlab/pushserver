@@ -134,16 +134,23 @@ function ApnPushManager(app) {
    * @param tokens
    */
   ApnPushManager.prototype.send = function(message, custom, tokens) {
-    debug('APNS : Sending push with : message = %s message, custom = %j , num tokens = %d', message, custom, tokens.length);
+    console.log('APNS : Sending push with : message = %s message, custom = %j , num tokens = %d', message, custom, tokens.length);
     // connect to apple server, using the app's cred & key
-    console.log("APNS : Sending %d tokens.", tokens.length);
 
-    const note = new apn.Notification(custom);
-    note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-    note.sound = "default";
+    const rawPayload = custom && custom.rawPayload;
+
+    const note = new apn.Notification(rawPayload || custom);
+    note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now
     note.pushType = 'alert'; // required from iOS 13
+    if (rawPayload) {
+      note.rawPayload = rawPayload;
+    } else {
+      note.sound = "default";
+    }
+    console.log('APNS : note', note)
     this.service.send(note, tokens)
         .then((response) => {
+          console.log('APNS : response', response)
           response.sent.forEach((token) => {
             console.log('APNS : Sent notification to token ', token);
           });
