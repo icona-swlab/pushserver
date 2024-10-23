@@ -63,7 +63,7 @@ function ApnPushManager(app) {
           if (item === null) {
             throw new Error("APNS : Unable to find device token " + token + " for app  " + self.application.name + "[" +  self.application.type + "]");
           }
-          console.log("APNS : Removing device token %s for app %s[%s]", item.token, self.application.name, self.application.type);
+          console.log(new Date().toISOString(), "APNS : Removing device token %s for app %s[%s]", item.token, self.application.name, self.application.type);
           return item.token;
         })
         .catch(function(e) {
@@ -73,7 +73,7 @@ function ApnPushManager(app) {
       "concurrency": config.get("dbConfig").get("concurrencyLimit") || 50
     }).then(function(item){
       if (item.length) {
-        console.log("APNS : %d obsolete tokens have been removed for application %s[%s] .", item.length, self.application.name, self.application.type);
+        console.log(new Date().toISOString(), "APNS : %d obsolete tokens have been removed for application %s[%s] .", item.length, self.application.name, self.application.type);
       }
     });
   };
@@ -134,7 +134,7 @@ function ApnPushManager(app) {
    * @param tokens
    */
   ApnPushManager.prototype.send = function(message, custom, tokens) {
-    console.log('APNS : Sending push with : message = %s message, custom = %j , num tokens = %d', message, custom, tokens.length);
+    console.log(new Date().toISOString(), 'APNS : Sending push with : message = %s message, custom = %j , num tokens = %d', message, custom, tokens.length);
     // connect to apple server, using the app's cred & key
 
     const rawPayload = custom && custom.rawPayload;
@@ -147,19 +147,19 @@ function ApnPushManager(app) {
     } else {
       note.sound = "default";
     }
-    console.log('APNS : note', note)
+    console.log(new Date().toISOString(), 'APNS : note', note)
     this.service.send(note, tokens)
         .then((response) => {
-          console.log('APNS : response', response)
+          console.log(new Date().toISOString(), 'APNS : response', response)
           response.sent.forEach((token) => {
-            console.log('APNS : Sent notification to token ', token);
+            console.log(new Date().toISOString(), 'APNS : Sent notification to token ', token);
           });
           response.failed.forEach((failure) => {
-            console.log('APNS : Failed to send notification ', failure);
+            console.log(new Date().toISOString(), 'APNS : Failed to send notification ', failure);
           });
         })
         .catch((err) => {
-          console.log('APNS : send Error ', err);
+          console.log(new Date().toISOString(), 'APNS : send Error ', err);
         })
   };
 
