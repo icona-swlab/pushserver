@@ -20,6 +20,7 @@ util.inherits(DeviceController, CrudController);
  * @returns {object}
  */
 DeviceController.prototype.prepareObject = function(obj, create) {
+  console.log(new Date().toISOString(), `Inserting device -> create: ${create}, obj: ${JSON.stringify(obj)}`);
   var now = new Date();
   if (create) {
     obj["created"] = {
